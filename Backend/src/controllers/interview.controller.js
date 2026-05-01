@@ -1,12 +1,12 @@
 const pdfParse = require("pdf-parse")
-const { generateInterviewReport, generateResumePdf } = require("../services/ai.service")
+const generateInterviewReport = require("../services/ai.service");
 const interviewReportModel = require("../model/interviewReport.model")
 
 
 async function generateInterViewReport(req, res) {
 
     const resumeContent = await (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText()
-    const { selfDescription, jobDescription } = req.body;
+    const { selfDescription, jobDescription } = req.body
 
     const interViewReportByAi = await generateInterviewReport({
         resume: resumeContent.text,
@@ -14,11 +14,14 @@ async function generateInterViewReport(req, res) {
         jobDescription
     })
 
+    //const titleFallback = interViewReportByAi?.title || (jobDescription ? String(jobDescription).split('\n')[0].slice(0, 120) : 'Target Role')
+
     const interviewReport = await interviewReportModel.create({
         user: req.user.id,
         resume: resumeContent.text,
         selfDescription,
         jobDescription,
+        //title: titleFallback,
         ...interViewReportByAi
     })
 
@@ -28,6 +31,7 @@ async function generateInterViewReport(req, res) {
     })
 
 }
+
 
 async function getInterviewReportById(req, res) {
 
@@ -47,7 +51,6 @@ async function getInterviewReportById(req, res) {
     })
 }
 
-
 async function getAllInterviewReports(req, res) {
     const interviewReports = await interviewReportModel.find({ user: req.user.id }).sort({ createdAt: -1 }).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")
 
@@ -56,7 +59,6 @@ async function getAllInterviewReports(req, res) {
         interviewReports
     })
 }
-
 
 // async function generateResumePdf(req, res) {
 //     const { interviewReportId } = req.params

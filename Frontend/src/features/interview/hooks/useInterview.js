@@ -16,56 +16,78 @@ export const useInterview = () => {
 
     const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
-        let response = null
+
         try {
-            response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
-            setReport(response?.interviewReport ?? null)
+            const response = await generateInterviewReport({
+                jobDescription,
+                selfDescription,
+                resumeFile
+            })
+
+            if (response?.interviewReport) {
+                setReport(response.interviewReport)
+                return response.interviewReport
+            }
+
+            return null
+
         } catch (error) {
             console.log(error)
+            return null
         } finally {
             setLoading(false)
         }
-
-        return response?.interviewReport ?? null
     }
 
 
 
     const getReportById = async (interviewId) => {
+        if (!interviewId) return null
+
         setLoading(true)
-        let response = null
+
         try {
-            response = await getInterviewReportById(interviewId)
-            setReport(response?.interviewReport ?? null)
+            const response = await getInterviewReportById(interviewId)
+
+            if (response?.interviewReport) {
+                setReport(response.interviewReport)
+                return response.interviewReport
+            }
+
+            return null
+
         } catch (error) {
             console.log(error)
+            return null
         } finally {
             setLoading(false)
         }
-        return response?.interviewReport ?? null
     }
-
     const getReports = async () => {
         setLoading(true)
-        let response = null
+
         try {
-            response = await getAllInterviewReports()
-            setReports(response?.interviewReports ?? [])
+            const response = await getAllInterviewReports()
+
+            if (response?.interviewReports) {
+                setReports(response.interviewReports)
+                return response.interviewReports
+            }
+
+            return []
+
         } catch (error) {
             console.log(error)
+            return []
         } finally {
             setLoading(false)
         }
-
-        return response?.interviewReports ?? []
     }
 
     useEffect(() => {
-        if (interviewId) {
-            getReportById(interviewId)
-        } else {
-            getReports()
-        }
+        if (!interviewId || interviewId === "undefined") return
+
+        getReportById(interviewId)
     }, [interviewId])
 
     return { loading, report, reports, getReportById, getReports, generateReport }

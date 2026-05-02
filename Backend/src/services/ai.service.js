@@ -2,7 +2,6 @@ const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
 
-
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
@@ -30,27 +29,86 @@ const interviewReportSchema = z.object({
         tasks: z.array(z.string()).describe("List of tasks to be done on this day to follow the preparation plan, e.g. read a specific book or article, solve a set of problems, watch a video etc.")
     })).describe("A day-wise preparation plan for the candidate to follow in order to prepare for the interview effectively"),
     title: z.string().describe("The title of the job for which the interview report is generated"),
-});
+})
 
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
 
-    const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}`
+    const prompt = `
+You are an expert technical interviewer.
+
+Return ONLY valid JSON.
+
+STRICT RULES:
+- Do NOT return text outside JSON
+- Do NOT return empty arrays
+- Follow exact structure
+- Minimum:
+  - 5 technicalQuestions
+  - 3 behavioralQuestions
+  - 3 skillGaps
+  - 5 preparationPlan items
+
+{
+  "matchScore": number,
+  "technicalQuestions": [
+    {
+      "question": string,
+      "intention": string,
+      "answer": string
+    }
+  ],
+  "behavioralQuestions": [
+    {
+      "question": string,
+      "intention": string,
+      "answer": string
+    }
+  ],
+  "skillGaps": [
+    {
+      "skill": string,
+      "severity": "low" | "medium" | "high"
+    }
+  ],
+  "preparationPlan": [
+    {
+      "day": number,
+      "focus": string,
+      "tasks": [string]
+    }
+  ]
+}
+
+DATA:
+Resume: ${resume}
+Self Description: ${selfDescription}
+Job Description: ${jobDescription}
+`;
 
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
-            responseMimeType: "application/json",
-            responseSchema: zodToJsonSchema(interviewReportSchema),
+            responseMimeType: "application/json"
         }
-    })
+    });
 
-    return JSON.parse(response.text)
+  //console.log("RAW AI RESPONSE:", response.text);
+    let parsed;
 
+    try {
+        parsed = JSON.parse(response.text);
+    } catch (err) {
+        console.error("JSON Parse Failed:", response.text);
+        throw new Error("AI response parsing failed");
+    }
+
+    if (!parsed?.technicalQuestions?.length) {
+        throw new Error("AI returned empty technicalQuestions");
+    }
+
+    return parsed;
 }
 
 module.exports = generateInterviewReport;

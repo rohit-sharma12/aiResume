@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router'
 const Interview = () => {
   const [active, setActive] = useState("technical");
   const [openIndex, setOpenIndex] = useState(null);
-  const { report, getReportById, loading, getResumePdf } = useInterview()
+  const { report, getReportById, loading } = useInterview()
   const { interviewId } = useParams()
 
 

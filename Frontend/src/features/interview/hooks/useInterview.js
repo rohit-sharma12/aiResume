@@ -85,9 +85,11 @@ export const useInterview = () => {
     }
 
     useEffect(() => {
-        if (!interviewId || interviewId === "undefined") return
-
-        getReportById(interviewId)
+        if (interviewId) {
+            getReportById(interviewId)
+        } else {
+            getReports()
+        }
     }, [interviewId])
 
     return { loading, report, reports, getReportById, getReports, generateReport }

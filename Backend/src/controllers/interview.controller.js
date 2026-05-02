@@ -13,15 +13,14 @@ async function generateInterViewReport(req, res) {
         selfDescription,
         jobDescription
     })
-
-    //const titleFallback = interViewReportByAi?.title || (jobDescription ? String(jobDescription).split('\n')[0].slice(0, 120) : 'Target Role')
+    const title = jobDescription.split("\n")[0];
 
     const interviewReport = await interviewReportModel.create({
         user: req.user.id,
         resume: resumeContent.text,
         selfDescription,
         jobDescription,
-        //title: titleFallback,
+        title,
         ...interViewReportByAi
     })
 
@@ -50,6 +49,7 @@ async function getInterviewReportById(req, res) {
         interviewReport
     })
 }
+
 
 async function getAllInterviewReports(req, res) {
     const interviewReports = await interviewReportModel.find({ user: req.user.id }).sort({ createdAt: -1 }).select("-resume -selfDescription -jobDescription -__v -technicalQuestions -behavioralQuestions -skillGaps -preparationPlan")

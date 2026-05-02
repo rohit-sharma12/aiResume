@@ -60,25 +60,23 @@ const preparationPlanSchema = new mongoose.Schema({
         type: String,
         required: [true, "Focus is required"],
     },
-    tasks: {
+    tasks: [{
         type: String,
         required: [true, "Task is required"]
-    }
+    }]
 })
 
 
 const interviewReportSchema = new mongoose.Schema({
     jobDescription: {
         type: String,
-        required: true,
+        required: [true, "Job description is required"],
     },
     resume: {
         type: String,
-        optional: true,
     },
     selfDescription: {
         type: String,
-
     },
     matchScore: {
         type: Number,
@@ -93,10 +91,10 @@ const interviewReportSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
     },
-    // title: {
-    //     type: String,
-    //     required:[true, "Job title is required"]
-    // }
+    title: {
+        type: String,
+        required: [true, "Job title is required"]
+    }
 }, {
     timestamps: true
 });
